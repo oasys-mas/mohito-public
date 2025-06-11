@@ -1,0 +1,3 @@
+[submodule "wildfire/nested-wildfire-free-range-zoo"]
+	path = wildfire/nested-wildfire-free-range-zoo
+	url = git@github.com:oasys-mas/nested-wildfire-free-range-zoo.git
