@@ -20,6 +20,7 @@ Below are the instructions to install and run Rideshare and Wildfire. They have 
 1. Clone the free-range-zoo submodule `git submodule update --init`
 2. Install [nested-wildfire-free-range-zoo](./wildfire/nested-wildfire-free-range-zoo/), using the free-range-zoo [installation instructions](https://oasys-mas.github.io/free-range-zoo/introduction/installation.html) 
 3. Install [MOHITO](./wildfire/MOHITO/) with `poetry install` from the `wildfire/mohito` directory.
+4. Install `scipy`, `seaborn`, and `numpy` for plotting. `pip install scipy seaborn numpy`.
 
 
 ### [Training](./wildfire/mohito_wf_trainer.py)
@@ -34,6 +35,14 @@ Below are the instructions to install and run Rideshare and Wildfire. They have 
 ---
 
 ### [Baselines](./wildfire/baseline_generator.py)
+
+---
+
+### [Plotting](./wildfire/plotting_wildfire.ipynb)
+
+1. Set `policy_eval_outputs` values to policy root paths. 
+2. Set `baseline_output_folder` to output folder for Baselines.
+3. Run notebook.
 
 
 
