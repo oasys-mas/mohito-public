@@ -14,7 +14,7 @@ from torch_geometric.data import Data, Batch
 from torch.distributions import Categorical
 from torch.nn.functional import softmax, relu, leaky_relu
 from copy import deepcopy
-from utils import add_row_to_csv
+from rideshare.utils import add_row_to_csv
 
 torch.autograd.set_detect_anomaly(True)
 

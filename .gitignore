@@ -5,7 +5,7 @@
 .direnv
 .envrc
 
-**.vscode/*
+**/.vscode
 my_secrets.py
 
 ### Python ###
@@ -20,6 +20,11 @@ __pycache__/
 *.tar.gz
 *.png
 **/.neptune
+*.pt 
+*.pth 
+*.pdf
+*.txt
+*.sh
 
 
 #LATEX

@@ -12,7 +12,7 @@ import sys
 from datetime import datetime
 from torchviz import make_dot
 from rideshare.ride import *
-from rideshare.mohito.simulated_ride import *
+from rideshare.simulated_ride import *
 from rideshare.utils import *
 from rideshare.replay_buffer import Trajectories
 import csv
@@ -56,9 +56,9 @@ all_expert_agents[3] = ['cuda_03-18_20000eps_100pereps_open_agents4_pass16_A20_C
 print(attention)
 
 if attention:
-    from rideshare.mohito.gat import *
+    from mohitoR.gat import *
 else:
-    from rideshare.mohito.gcn import *
+    from mohitoR.gcn import *
 
 eval_file = './results/' + str(result_file) + '/final_' + str(result_file) + '.csv'
 eval_plot = './results/' + str(result_file) + '/final_' + str(result_file) 

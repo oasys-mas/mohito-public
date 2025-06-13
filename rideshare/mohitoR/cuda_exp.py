@@ -15,9 +15,9 @@ import subprocess
 from datetime import datetime
 from torchviz import make_dot
 import sys
-from ride import *
-from simulated_ride import *
-from utils import *
+from rideshare.ride import *
+from rideshare.simulated_ride import *
+from rideshare.utils import *
 #from replay_buffer import ReplayBuffer
 
 set_seed(16)
@@ -54,7 +54,7 @@ no_pass_reward = True #bool(sys.argv[6])
 attention = True #str(sys.argv[2]) == 'True'
 regularise_actor = True
 regularise_critic = False
-consistency = True
+consistency = False
 variable_reg = False
 reg_range = [0.004, 0.002]
 cuda_exp = False
@@ -197,6 +197,7 @@ if not os.path.isdir('./results/'+ str(result_file)):
 
 loss_file = './results/' + str(result_file) + '/losses_'+ str(result_file) + '.pkl'
 eval_file = './results/' + str(result_file) + '/eval_file_' + str(result_file) + '.csv'
+eval_stats_file = './results/' + str(result_file) + '/eval_stats_file_' + str(result_file) + '.csv'
 stats_file = './results/' + str(result_file) + '/stats_file_' + str(result_file) + '.csv'
 
 
@@ -708,7 +709,7 @@ while epoch <= num_episodes:
 
             if (epoch+1) % evaluate_model_every_eps == 0:
 
-                evalSimulator(epoch, simulated_env, actor_list, steps_per_episode_eval, simulated_eps, eval_file, device, openness = openness, driver_locations=driver_locations_eval)
+                evalSimulator(epoch, simulated_env, actor_list, steps_per_episode_eval, simulated_eps, eval_file, eval_stats_file=eval_stats_file, device=device, openness=openness, driver_locations=driver_locations_eval)
 
             # update episode and epsilon
             epoch = epoch+1
@@ -744,7 +745,7 @@ print("Results collated and dumped to local")
 # ------------------------------------
 # Post Training Analysis
 
-subprocess.run(["python", "loss_analysis_split.py", str(result_file), str(reg_lambda_actor), str(consistency_lambda)])
-print("Training Losses Plotted")
+# subprocess.run(["python", "loss_analysis_split.py", str(result_file), str(reg_lambda_actor), str(consistency_lambda)])
+# print("Training Losses Plotted")
 
 

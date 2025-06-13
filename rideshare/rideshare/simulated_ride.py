@@ -18,7 +18,7 @@ from copy import deepcopy
 import heapq
 import torch
 from torch_geometric.data import Data
-from utils import * 
+from rideshare.utils import * 
 from torch_geometric.utils import add_self_loops
 
 #num_agents = 3
