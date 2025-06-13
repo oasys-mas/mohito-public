@@ -1,7 +1,15 @@
-import neptune
-from neptune.utils import stringify_unsupported
-import os
-import argparse
+import os, copy, tqdm, argparse, random, yaml
+from typing import Dict, List, Tuple, Any
+import torch
+
+from free_range_zoo.utils.env import BatchedAECEnv
+from free_range_zoo.wrappers.action_task import action_mapping_wrapper_v0
+from free_range_zoo.envs.wildfire.configs.uai_experiment import UAI_2025_ol_config
+from free_range_zoo.envs import wildfire_v0
+
+from mohito.mohito import ActorReturn, Mohito
+from mohito.mohito_wrapper import mohito_hypergraph_wrapper_v0
+
 
 parser = argparse.ArgumentParser(
     description="MOHITO Wildfire Trainer",
@@ -41,7 +49,7 @@ except:
     pass
 
 # %%
-import yaml
+
 with open(args.mohito_config_file, 'r') as file:
     mohito_hyperparameters = yaml.safe_load(file)
 
@@ -50,26 +58,20 @@ print(yaml.dump(mohito_hyperparameters, default_flow_style=False))
 training_parameters = mohito_hyperparameters.pop('training')
 validation_parameters = mohito_hyperparameters.pop('validation')
 
-# %% [markdown]
-# ### Environment Config
-
 # %%
-from free_range_zoo.envs.wildfire.configs.uai_experiment import UAI_2025_ol_config
 
 conf_params = {
     # 'openness_level': 1,
     # 'starting_state': 1,
-    'fire_types': [
+    'fire_types': [ #see UAI_2025_ol_config for details
         [["j0", "j2", "j0"], ["j1", "j2", "j1"]],  #ss0
         [["j1", "j2", "j1"], ["j0", "j2", "j0"]],  #ss1
         [["j0", "j2", "j0"], ["j1", "j2", "j1"]],  #ss2
     ],
     'fire_rewards': [0, 20, 400],
     'burnout_penalty': [0, -10, -25],
-    'base_spread':
-    'ol',
-    'random_ignition_prob':
-    0.1
+    'base_spread': 'ol', #determine base spread by OL
+    'random_ignition_prob': 0.1
 }
 
 conf: dict[int, list[UAI_2025_ol_config]] = {}
@@ -84,7 +86,7 @@ for openness_level in range(3):
     conf[openness_level + 1] = OL_conf
 
 
-import torch, os, copy
+
 
 if training_parameters['reprod_training']:
     torch.use_deterministic_algorithms(True, warn_only=True)
@@ -94,8 +96,6 @@ if training_parameters['reprod_training']:
 # get agents
 
 # %%
-from free_range_zoo.envs import wildfire_v0
-
 
 env = wildfire_v0.parallel_env(
     max_steps=100,
@@ -118,8 +118,6 @@ env.close()
 print(agent_names)
 
 # %%
-from mohito.mohito import Mohito
-from mohito.mohito import ActorReturn, CriticReturn
 
 agent_policies = {
     name: Mohito(name=name, **mohito_hyperparameters)
@@ -129,10 +127,6 @@ agent_policies = {
 print(agent_policies[agent_names[0]])
 
 # %%
-from typing import Dict, List, Tuple, Any
-import random
-from free_range_zoo.utils.env import BatchedAECEnv
-
 
 class MohitoCriticController:
     """
@@ -313,8 +307,6 @@ class MohitoCriticController:
 
 
 # %%
-from mohito_wrapper import mohito_hypergraph_wrapper_v0
-from free_range_zoo.wrappers.action_task import action_mapping_wrapper_v0
 
 envs = [
     wildfire_v0.parallel_env(
@@ -362,7 +354,6 @@ for j, (env, val_env) in enumerate(zip(envs, val_envs)):
     val_envs[j] = val_env
 
 # %%
-import tqdm
 
 update_controller = MohitoCriticController(
     agent_names=agent_names,

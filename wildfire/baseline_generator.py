@@ -1,4 +1,12 @@
-import argparse
+import argparse, tqdm, os
+import torch
+
+from free_range_zoo.wrappers.action_task import action_mapping_wrapper_v0
+from free_range_zoo.wrappers.space_validator import space_validator_wrapper_v0
+from free_range_zoo.envs.wildfire.configs.uai_experiment import UAI_2025_ol_config
+from free_range_zoo.envs import wildfire_v0
+from free_range_zoo.envs.wildfire.baselines import NoopBaseline, RandomBaseline, WeakestBaseline, FifoBaseline
+
 
 
 parser = argparse.ArgumentParser(
@@ -10,7 +18,10 @@ parser.add_argument(
     help='Seed for random number generation (default: 42)',
 )
 parser.add_argument(
-    "-n", type=int)
+    "-n",
+    help="number of episodes / starting state (will perform n * starting states * OLs many episodes)",
+    type=int
+)
 
 args = parser.parse_args()
 
@@ -21,7 +32,7 @@ episodes_per_ss = args.n  // 3
 baseline_output_folder = 'baseline_output'
 
 # %%
-from free_range_zoo.envs.wildfire.configs.uai_experiment import UAI_2025_ol_config
+
 
 conf_params = {
     # 'openness_level': 1,
@@ -33,10 +44,8 @@ conf_params = {
     ],
     'fire_rewards': [0, 20, 400],
     'burnout_penalty': [0, -10, -25],
-    'base_spread':
-    'ol',
-    'random_ignition_prob':
-    0.1
+    'base_spread': 'ol',
+    'random_ignition_prob': 0.1
 }
 
 conf: dict[int, list[UAI_2025_ol_config]] = {}
@@ -56,13 +65,6 @@ for openness_level in range(3):
 # ## Test Load Environment (determine fixed number of agents)
 
 # %%
-from free_range_zoo.envs import wildfire_v0
-from free_range_zoo.wrappers.action_task import action_mapping_wrapper_v0
-from free_range_zoo.wrappers.space_validator import space_validator_wrapper_v0
-import torch
-import tqdm, os
-from free_range_zoo.envs.wildfire.baselines import NoopBaseline, RandomBaseline, WeakestBaseline, FifoBaseline
-
 
 torch.use_deterministic_algorithms(True, warn_only=True)
 
@@ -72,7 +74,8 @@ with tqdm.tqdm(total=episodes_per_ss * 3 * 3 * len(baselines),
                ascii="=/🐦") as pbar:
     for baseline in baselines:
         for ol, ol_conf in conf.items():
-
+            
+            # seed starting state offset
             j_ss_offset = 0
 
             for ss, ol_ss_conf in enumerate(ol_conf):
@@ -84,7 +87,7 @@ with tqdm.tqdm(total=episodes_per_ss * 3 * 3 * len(baselines),
                     device=torch.device('cpu'),
                     log_directory=os.path.join(
                         baseline_output_folder,
-                        f"test_logging_policy;{baseline.__name__}_ol;{ol}_ss;{ss}"),
+                        f"test_logging_policy;{baseline.__name__}_ol;{ol}_ss;{ss}"), #key for logging
                     override_initialization_check=True,
                     show_bad_actions=False,
                     observe_other_suppressant=False,
@@ -132,54 +135,3 @@ with tqdm.tqdm(total=episodes_per_ss * 3 * 3 * len(baselines),
                 env.close()
 
                 j_ss_offset += episodes_per_ss
-
-# %%
-import pandas as pd
-import math
-
-dfs = pd.concat([
-    pd.read_csv(os.path.join(root, file))
-    for root, _, files in os.walk(baseline_output_folder) for file in files
-    if file.endswith('.csv')
-])
-
-reward_cols = [col for col in dfs.columns if 'rewards' in col]
-
-dfs = dfs[['description', 'step'] + reward_cols]
-dfs['policy'] = dfs['description'].apply(
-    lambda x: x.split('_')[0].split(';')[1])
-dfs['openness level'] = dfs['description'].apply(
-    lambda x: int(x.split('_')[1].split(';')[1]))
-dfs['starting state'] = dfs['description'].apply(
-    lambda x: int(x.split('_')[2].split(';')[1]))
-dfs['episodes'] = dfs['description'].apply(
-    lambda x: int(x.split('_')[3].split(';')[1]))
-dfs.drop(columns=['description'], inplace=True)
-
-#sum over steps
-dfs = dfs.groupby(['policy', 'openness level', 'episodes',
-                   'starting state']).sum().reset_index()
-dfs['final_rewards'] = dfs[reward_cols].mean(axis=1)
-
-#average over starting states / episodes generally speaking
-pivot = pd.pivot_table(dfs,
-                       index=['openness level'],
-                       columns=['policy'],
-                       values='final_rewards',
-                       aggfunc='mean')
-
-pivot_std = pd.pivot_table(dfs,
-                           index=['openness level'],
-                           columns=['policy'],
-                           values='final_rewards',
-                           aggfunc='std')
-pivot_std = 1.96 * pivot_std / math.sqrt(args.n)
-
-pivot.plot(kind='bar',
-           yerr=pivot_std,
-           capsize=5,
-           figsize=(10, 6),
-           title='Average Final Rewards by Openness Level and Policy')
-
-import matplotlib.pyplot as plt
-plt.savefig(f'plots/baseline_rewards_{args.seed}_{args.n}.png', dpi=300, bbox_inches='tight')
