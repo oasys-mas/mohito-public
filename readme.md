@@ -32,9 +32,23 @@ Below are the instructions to install and run Rideshare and Wildfire. They have 
 
 ### [Testing](./wildfire/mohito_wf_tester.py)
 
+1. `-ol` selects an openness level. This determines the rate of fire spread. In our paper, this matches the training ol.
+2. `-m` selects a configuration this must match the one in training.
+3. `-o` selects a output directory. The logs for testing will be placed here split by `starting_state`, `checkpoint`, and `openness_level`
+4. `-p` is the policy path. This should be `-o/mohito_checkpoints` from training.
+5. `--seed` is the seed used for testing. This will be the initial seed for the first starting state. Reproducibility is dependent on this and `n`.
+6. `-n` is the number of episodes to perform per openness level. This is split evenly across openness levels. 
+7. (Optional) `--low` is the starting index of checkpoints to test.
+8. (Optional) `--high` is the ending index of checkpoints to test (-1 is all).
+
+
 ---
 
 ### [Baselines](./wildfire/baseline_generator.py)
+
+1. `-o` the output folder for baselines. 
+2. `--seed` same as testing.
+3. `-n` same as testing.
 
 ---
 
@@ -42,13 +56,13 @@ Below are the instructions to install and run Rideshare and Wildfire. They have 
 
 1. Set `policy_eval_outputs` values to policy root paths. 
 2. Set `baseline_output_folder` to output folder for Baselines.
-3. Run notebook.
+3. Run the notebook.
 
 
 
 ## Citation
 
-If you use this work cite you can cite us with this,
+If you use this work please cite us with this,
 
 ```
 @inproceedings{mohito,

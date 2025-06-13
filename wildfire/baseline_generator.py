@@ -19,8 +19,15 @@ parser.add_argument(
 )
 parser.add_argument(
     "-n",
-    help="number of episodes / starting state (will perform n * starting states * OLs many episodes)",
-    type=int
+    help=
+    "number of episodes / starting state (will perform n * starting states * OLs many episodes)",
+    type=int)
+parser.add_argument(
+    '-o',
+    '--output_folder',
+    type=str,
+    default='baseline_output',
+    help='Output directory for results (default: baseline_output)',
 )
 
 args = parser.parse_args()
@@ -29,7 +36,7 @@ args = parser.parse_args()
 # %%
 #seed for testing
 episodes_per_ss = args.n  // 3
-baseline_output_folder = 'baseline_output'
+baseline_output_folder = args.output_folder
 
 # %%
 
@@ -74,7 +81,7 @@ with tqdm.tqdm(total=episodes_per_ss * 3 * 3 * len(baselines),
                ascii="=/🐦") as pbar:
     for baseline in baselines:
         for ol, ol_conf in conf.items():
-            
+
             # seed starting state offset
             j_ss_offset = 0
 
