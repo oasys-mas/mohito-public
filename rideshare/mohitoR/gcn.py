@@ -79,7 +79,7 @@ class ActorGNN(torch.nn.Module):
 # Actor Network Definition
 
 class ActorNetwork(nn.Module):
-    def __init__(self, num_state_features, LR_A, BETA, hidden_dim_actor = 50, num_layers = 20):
+    def __init__(self, num_state_features, LR_A, BETA, hidden_dim_actor = 50, num_layers = 20, grad_clip:float = 1):
 
         super(ActorNetwork, self).__init__()
         # main actor network
@@ -90,6 +90,7 @@ class ActorNetwork(nn.Module):
         self.BETA = BETA
         self.gradient_norms = [] 
         self.layer_grad_norms = []
+        self.grad_clip = grad_clip
 
     def forward(self, data, subset_nodes, network = 'main'):
 
@@ -157,8 +158,8 @@ class ActorNetwork(nn.Module):
         total_norm = total_norm ** 0.5
         self.gradient_norms.append(total_norm)
 
-        ## clip gradients
-        #torch.nn.utils.clip_grad_norm_(self.parameters(), 1)  # clip gradients to prevent explosion
+        # clip gradients
+        torch.nn.utils.clip_grad_norm_(self.parameters(), self.grad_clip)  # clip gradients to prevent explosion
 
         # update weights
         self.optimizer.step() 

@@ -660,6 +660,20 @@ class simulatedRideshare():
             nodes = adj_matrix.columns.tolist()
             action_space = feature_matrix[[nodes.index(n) for n in nodes if n in connected_a_nodes]].tolist()
 
+            # if obs variable already has accepted and riding agents upto limit, 
+            # remove all accept actions from action_space and connected_e_nodes_indices
+
+            count = sum(1 for level in [obs[2], obs[3]] 
+                                for row in level 
+                                for cell in row 
+                                for c in cell
+                                if c and c[0] == idx)
+
+            if count >= self.pool_limit+1:
+                indices = [i for i, sublist in enumerate(action_space) if sublist[3] == 0]
+                action_space = [action_space[i] for i in range(len(action_space)) if i not in indices]
+                connected_e_nodes_indices = [connected_e_nodes_indices[i] for i in range(len(connected_e_nodes_indices)) if i not in indices]
+
             edge_nodes_list.append(connected_e_nodes_indices)
             action_space_list.append(action_space)
             node_set_list.append(self_edges)

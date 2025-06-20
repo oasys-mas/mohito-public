@@ -10,7 +10,34 @@ Below are the instructions to install and run Rideshare and Wildfire. They have 
 
 ## Rideshare
 
+### Training
+- Training is done using the `trainer.py` script.
+- All required parameters including number of agents, openness level, pooling limit, simulated episode type, and training hyperparameters can be set within the script.
+- Trained policy files are saved to `./results/<run_name>/model_files/` by default, where `<run_name>` is automatically generated based on experiment settings.
+- The following files are also saved under the same folder:
+  - `policy_agent<i>.pth` and `critic_agent<i>.pth`: Checkpoints for each agent.
+  - `losses_<run_name>.pkl`: Contains loss metrics for actor and critic during training.
+  - `eval_file_<run_name>.csv`: Evaluation logs captured at periodic intervals.
+  - `stats_file_<run_name>.csv`: Per-step environment statistics (e.g., trip success, wait times).
+  - `eval_stats_file_<run_name>.csv`: Evaluation-time environment statistics.
+  - `config.json`: Dumped hyperparameters and training configuration.
+  - `random_actor.pth`: A random baseline actor for comparison.
+- Post-training analysis (e.g., plotting losses) is performed via `loss_analysis_split.py`.
 
+### Testing
+- Testing is done using the `evaluator.py` script.
+- Set the number of agents and the policy files you would like to use to test a scenario.
+- You can run this on a subset of policies (just OL1+2agent or all. If you do it individually concatenate the `MOHITO` portions into one csv before plotting)
+- Environment variables such as openness level, grid dimensions, etc. can be set in the script.
+- During evaluation, the following outputs are saved:
+  - A `.csv` file with detailed step-wise agent performance, stored under `./baseline-comparisons/`
+  - An optional `temp.pkl` file containing full trajectory data for visualization (saved under `./results/<result_folder>/` if enabled in code)
+
+- follow the instructions in the [TaO-PG-ELLA Readme](./rideshare/tao_pg_ella/README.md) for our remaining baseline.
+
+### [Plotting](./rideshare/plotting_rideshare.ipynb)
+- Set the `result_file` as the path to the evaluator output after running across all openness levels and agent numbers. 
+- Plotting can be run on a subset, but some plotting cells may throw errors. 
 
 
 ## Wildfire

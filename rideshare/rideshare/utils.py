@@ -157,6 +157,7 @@ def evalSimulator(eps_num, env, actor_list, steps_per_episode, simulated_eps, ev
             graph_device = deepcopy(graph).to(device)
             edge_space_device = torch.tensor(deepcopy(edge_space_list[ag_idx])).to(device)
             action_space_device = torch.tensor(deepcopy(action_space_list[ag_idx])).to(device)
+            actor_list[ag_idx].eval()
             edge_value, selected_action = actor_list[ag_idx].getAction(graph_device, edge_space_device, action_space_device, network='main', training=False)
             action_list.append(selected_action)
             edge_value_list.append(edge_value)
@@ -439,35 +440,5 @@ def add_row_to_csv(file_path, row, headers=None):
         
         # Write the row of data
         writer.writerow(row)
-
-def retrieveEdgeWeights(adj_matrix):
-    # Ensure adj_matrix is a NumPy array
-    adj_matrix = np.array(adj_matrix)
-    
-    # Get the indices of non-zero entries in the adjacency matrix
-    src, dst = adj_matrix.nonzero()
-    
-    # Create the edge_index tensor from these indices
-    edge_index = torch.tensor([src, dst], dtype=torch.long)
-    
-    # Extract the weights of the edges from the adjacency matrix
-    edge_weights = adj_matrix[src, dst]
-    edge_attr = torch.tensor(edge_weights, dtype=torch.float)
-    
-    return edge_index, edge_attr
-
-
-# conflict manager
-def executableActions(env, action_list):
-    temp_action_list = deepcopy(action_list)
-    agents_with_overlap = [i for i in range(len(temp_action_list)) if temp_action_list[i].tolist() in [x.tolist() for x in temp_action_list[:i]+temp_action_list[i+1:]] and temp_action_list[i][3] == 0]
-
-    if len(agents_with_overlap) > 1:
-        assigned_agent = env.conflictManager(temp_action_list, agents_with_overlap)
-        # Assign Noop action for agent with overlapping accept action
-        for agent_i in [x for x in agents_with_overlap if x != assigned_agent]:
-            temp_action_list[agent_i] = [-1, -1, -1, -1, -1] #Noop action
-
-    return temp_action_list
 
 

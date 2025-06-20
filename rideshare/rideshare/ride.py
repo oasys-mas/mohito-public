@@ -442,9 +442,7 @@ class rideshare():
         '''
         Function to reset the state of the environment to an initial state
         '''
-        set_seed(epoch)
-        new_seed_val = random.choice([1, 11, 111])
-        set_seed(new_seed_val)
+        #set_seed(step)
         # state variable
         # environment state
         self.state = np.empty((4, self.grid_length, self.grid_width), dtype=object)
@@ -454,14 +452,15 @@ class rideshare():
                 for k in range(self.grid_width):
                     self.state[i, j, k] = []
 
+        d_locations = []
         # update layer 0 with driver locations
         for i in range(self.num_agents):
             if driver_locations:
                 self.state[0, driver_locations[i][0], driver_locations[i][1]].append(i) 
             else:
-                self.state[0, randrange(self.grid_length), randrange(self.grid_width)].append(i)
+                d_locations.append([randrange(self.grid_length), randrange(self.grid_width)])
+                self.state[0, d_locations[i][0], d_locations[i][1]].append(i)
 
-        set_seed(16)
         # update layer 1 with accepted passenger details - (driver, start, end, fare)
         # accept_list = [[1, (1, 4), (2, 2), 5], [3, (0, 1), (2, 0), 6]]
         if accept_list:
@@ -479,7 +478,14 @@ class rideshare():
         # update layer 3 with passenger details - (start, end, fare)
         # passengers_list = [[(2, 3), (4, 1), 7], [(0, 3), (3, 0), 7]]
         if passengers_list == None:
-            passengers_list = self.generateTask(step = step, num_tasks = num_passengers)
+            # passengers_list = self.generateTask(step = step, num_tasks = num_passengers)
+            passengers_list = []
+            for loc in d_locations:
+                start_x, end_x = min(loc[0] + 2, self.grid_length), max(loc[0] - 2, 0)
+                start_y, end_y = min(loc[1] + 2, self.grid_width), max(loc[1] - 2, 0)
+                ridefare = (ridefare_x * max(3,  manhattan_distance((start_x, start_y), (end_x, end_y)))) + randrange(-1, 2, 1)
+                passengers_list.append([(start_x, start_y), (end_x, end_y), ridefare, 0])
+
         
         for passenger in passengers_list:
             self.state[3, passenger[0][0], passenger[0][1]].append([passenger[0], passenger[1], passenger[2], passenger[3]])
@@ -795,12 +801,8 @@ class rideshare():
         for agent_no in agents_with_overlap:
             ag_x, ag_y = np.argwhere(np.vectorize(lambda x: agent_no in x)(self.state[0]))[0]
             dist.append(math.hypot(ag_x - pick_x, ag_y - pick_y))
-        # assigned_agent = agents_with_overlap[dist.index(min(dist))]
-        pairs = sorted(zip(dist, agents_with_overlap))
-
-        # Extract the sorted agent indices
-        sorted_agents = [agent for _, agent in pairs]
-        return sorted_agents
+        assigned_agent = agents_with_overlap[dist.index(min(dist))]
+        return assigned_agent
             
 
     def heuristic(self, a, b):

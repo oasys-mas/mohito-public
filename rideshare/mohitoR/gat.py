@@ -31,13 +31,13 @@ class ActorGNN(torch.nn.Module):
         self.dropouts = torch.nn.ModuleList()
 
         self.convs.append(GATConv(input_dim, hidden_dim, heads=heads))
-        self.dropouts.append(torch.nn.Dropout(0.5))
+        self.dropouts.append(torch.nn.Dropout(0.2))
         self._init_weights(self.convs[-1])
 
         # num_layers - 2 because we add first and last layer separately
         for _ in range(num_layers-2):  
             self.convs.append(GATConv(hidden_dim * heads, hidden_dim, heads=heads))  # Note the multiplication by `heads` to match dimensions
-            self.dropouts.append(torch.nn.Dropout(0.5))
+            self.dropouts.append(torch.nn.Dropout(0.2))
             self._init_weights(self.convs[-1])
         
         self.convs.append(GATConv(hidden_dim * heads, input_dim, heads=heads))  # Again note the multiplication by `heads`
@@ -58,8 +58,7 @@ class ActorGNN(torch.nn.Module):
         for i in range(len(self.convs)-1):
             x = relu(self.convs[i](x, edge_index))
             # x = self.convs[i](x, edge_index)
-            if training:
-                x = self.dropouts[i](x)
+            x = self.dropouts[i](x)
         
         # last layer without relu
         x = self.convs[-1](x, edge_index)  
@@ -84,8 +83,7 @@ class ActorGNN(torch.nn.Module):
         for i in range(len(self.convs)-1):
             x = relu(self.convs[i](x, edge_index))
             # x = self.convs[i](x, edge_index)
-            if training:
-                x = self.dropouts[i](x)
+            x = self.dropouts[i](x)
         
         # last layer without relu
         x = self.convs[-1](x, edge_index)  
@@ -98,7 +96,7 @@ class ActorGNN(torch.nn.Module):
 # Actor Network Definition
 
 class ActorNetwork(nn.Module):
-    def __init__(self, num_state_features, LR_A, BETA, hidden_dim_actor = 50, num_layers = 20, heads = 2):
+    def __init__(self, num_state_features, LR_A, BETA, hidden_dim_actor = 50, num_layers = 20, heads = 2, grad_clip: float = 5):
 
         super(ActorNetwork, self).__init__()
         # main actor network
@@ -110,6 +108,7 @@ class ActorNetwork(nn.Module):
         self.BETA = BETA
         self.gradient_norms = [] 
         self.layer_grad_norms = []
+        self.grad_clip = grad_clip
 
     def forward(self, data, subset_nodes, network = 'main', training = True):
 
@@ -176,7 +175,7 @@ class ActorNetwork(nn.Module):
         self.gradient_norms.append(total_norm)
 
         # # clip gradients
-        # torch.nn.utils.clip_grad_norm_(self.parameters(), 1)  # clip gradients to prevent explosion
+        torch.nn.utils.clip_grad_norm_(self.parameters(), self.grad_clip)  # clip gradients to prevent explosion
 
         # update weights
         self.optimizer.step() 
@@ -199,12 +198,12 @@ class GNN(torch.nn.Module):
         self.dropouts = torch.nn.ModuleList()
 
         self.convs.append(GATConv(input_dim, hidden_dim, heads=4, concat=True))
-        self.dropouts.append(torch.nn.Dropout(0.5))
+        self.dropouts.append(torch.nn.Dropout(0.2))
         self._init_weights(self.convs[-1])
 
         for _ in range(num_layers-2):
             self.convs.append(GATConv(4 * hidden_dim, hidden_dim, heads=4, concat=True))
-            self.dropouts.append(torch.nn.Dropout(0.5))
+            self.dropouts.append(torch.nn.Dropout(0.2))
             self._init_weights(self.convs[-1])
 
         self.convs.append(GATConv(4 * hidden_dim, input_dim, heads=1, concat=False))
@@ -226,8 +225,7 @@ class GNN(torch.nn.Module):
         for i in range(len(self.convs) - 1):
             x = self.convs[i](x, edge_index)
             x = relu(x)
-            if training:
-                x = self.dropouts[i](x)
+            x = self.dropouts[i](x)
         
         x = self.convs[-1](x, edge_index)
 
