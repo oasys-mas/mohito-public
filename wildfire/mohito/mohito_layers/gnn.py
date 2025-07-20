@@ -81,6 +81,7 @@ class GNN(nn.Module):
         add_self_loops: bool = True,
         use_graph_norm: bool = False,
         layer_type: str = 'gatv2',
+        fc_hyperedges: bool = True,
         layer_params: Optional[Dict[str, Any]] = {'dropout': 0.0},
         device: str = 'cpu',
         #!dep inop
@@ -106,6 +107,7 @@ class GNN(nn.Module):
             add_self_loops (bool, optional): whether to add self loops to the graph
             use_graph_norm (bool, optional): whether to use graph norm
             layer_type (str, optional): - type of the layer to use (gatv2/gat/gcn)
+            fc_hyperedges (bool, optional): whether to fully connect hyperedges (default: True)
             layer_params (Optional[Dict[str, Any]], optional): parameters to pass to the layer
 
             device (str, optional): device to use for the model (default: 'cpu')
@@ -137,6 +139,10 @@ class GNN(nn.Module):
         self.add_self_loops = add_self_loops
         self.layer_params = layer_params
         self.device = device
+        self.fc_hyperedges = fc_hyperedges
+        
+        if not self.fc_hyperedges:
+            print("WARNING: fully connected hyperedges are disabled, this may impact observations")
 
         assert swap_noop_to_zero_index is None, "swap_noop_to_zero_index is deprecated"
         assert modified_subset_loss is None, "modified_subset_loss is deprecated"
@@ -248,6 +254,9 @@ class GNN(nn.Module):
         connected_hyperedges = (
             torch.isin(edge_index[0], hyperedge_node_indices)
             & torch.isin(edge_index[1], hyperedge_node_indices))
+
+        if not self.fc_hyperedges:
+            edge_index = edge_index[:, ~connected_hyperedges]
 
         batch = data.batch if hasattr(data, 'batch') else None
 

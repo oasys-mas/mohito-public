@@ -109,12 +109,18 @@ class Mohito(nn.Module):
         Args:
             x (tg.data.Data): Input data for the actor network.
         """
-        self._action = self.forward(x, explore=False,
-                                    action_space=None).task_action
+        out = self.forward(x, explore=False,
+                           action_space=None)
 
-    def act(self, action_space: Space) -> torch.IntTensor:
+        self._action = out.task_action
+        self._hyperedges = out.logits
+
+    def act(self, action_space: Space, return_logits: bool = False) -> torch.IntTensor:
         action = self._action.clone()
-        return self._action
+        if return_logits:
+            return self._action, self._hyperedges
+        else:
+            return self._action
 
     def _batch_critic_graph(self,
                             o,
