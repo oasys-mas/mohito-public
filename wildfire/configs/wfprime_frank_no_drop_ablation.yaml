@@ -44,6 +44,7 @@ gamma: 0.99
 exp_ac_softhard_logits: false
 
 both:
+  ablation_ignore_task_nodes: true
   exp_linear_combination: false
   regularize: true
   beta: 0.01
