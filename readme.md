@@ -45,7 +45,7 @@ Below are the instructions to install and run Rideshare and Wildfire. They have 
 ### Installation
 
 1. Clone the free-range-zoo submodule `git submodule update --init`
-2. Install [nested-wildfire-free-range-zoo](./wildfire/nested-wildfire-free-range-zoo/), using the free-range-zoo [installation instructions](https://oasys-mas.github.io/free-range-zoo/introduction/installation.html) 
+2. Install [nested-wildfire-free-range-zoo](https://github.com/oasys-mas/nested-wildfire-free-range-zoo), using the free-range-zoo [installation instructions](https://oasys-mas.github.io/free-range-zoo/introduction/installation.html) 
 3. Install [MOHITO](./wildfire/mohito/) with `poetry install` from the `wildfire/mohito` directory.
 4. Install `scipy`, `seaborn`, `tqdm`, and `numpy` for plotting. `pip install scipy seaborn numpy tqdm`.
 
