@@ -1,6 +1,7 @@
 import argparse, yaml, tqdm, os, copy, random, sys
 import numpy as np
 import pandas as pd
+import torch
 from typing import Dict, List, Tuple, Any
 
 from free_range_zoo.utils.env import BatchedAECEnv
