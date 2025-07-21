@@ -167,7 +167,7 @@ class Critic(nn.Module):
             else:
                 q = torch.mean(gnn_output[b_sel_ed], dim=1)
 
-            q = torch.max(q)
+            q = torch.sum(q)
             Q.append(q)
         Q = torch.stack(Q, dim=0) 
 

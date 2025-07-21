@@ -195,6 +195,16 @@ class HypergraphWrapper(BaseModifier):
 
         for ed_batch, obs_batch, amap in zip(
                 hyperedges, obs, action_map['agent_action_mapping']):
+                        
+            #add NoOp-task to amap (after the final task)
+            amap = torch.cat([amap, torch.tensor([obs_batch['tasks'].shape[0]])])
+
+            #adjust task index of ed_batch to match observation counts
+            ed_batch = [
+                (amap[t].item(), a) for t, a in ed_batch
+            ]
+
+
             #[hyperedge nodes]
             hyperedge_nodes = torch.ones((len(ed_batch), self.padding_size))
             hyperedge_nodes[:, 0] = hyperedge_number
@@ -288,7 +298,7 @@ class HypergraphWrapper(BaseModifier):
 
             all_task_nodes = node_index[nodes[:, 0] == task_node_number]
             unseen_task_nodes = all_task_nodes[
-                ~torch.isin(all_task_nodes, tasks_to_hyperedges[0, :])]
+                ~torch.isin(all_task_nodes, tasks_to_hyperedges[:, 0])]
             unseen_tasks_to_self = torch.stack([
                 unseen_task_nodes,
                 torch.ones(unseen_task_nodes.shape[0], dtype=torch.long) *

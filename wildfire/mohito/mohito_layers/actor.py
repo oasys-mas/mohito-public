@@ -55,6 +55,7 @@ class Actor(nn.Module):
         regularize: bool,
         gradient_clip: float,
         name: str,
+        rotate_hyperedges: bool = False,
 
         #architectural parameters
         exp_include_E_in_Gc: bool = False,
@@ -77,6 +78,7 @@ class Actor(nn.Module):
             regularize (bool): whether to regularize the actor
             gradient_clip (float): gradient clipping value
             name (str): name of the model
+            rotate_hyperedges (bool, optional): if true, shuffle hyperedges to avoid 0 index bias
             exp_include_E_in_Gc (bool, optional): if true, relabel hyperedge identifier
             exp_log_soft_output (bool, optional): if true, use log softmax on the output
             exp_linear_combination (bool, optional): if true, use linear combination of the output features
@@ -95,6 +97,7 @@ class Actor(nn.Module):
         self.name = name
         self._step = 0
         self.K = K
+        self.rotate_hyperedges = rotate_hyperedges
 
         self.exp_include_E_in_Gc = exp_include_E_in_Gc
         self.exp_log_soft_output = exp_log_soft_output
@@ -173,7 +176,7 @@ class Actor(nn.Module):
                 logits = summed_features
 
             #!shuffles hyperedges to avoid 0 index bias. Otherwise false local optima can occur.
-            if self.main.ablation_ignore_task_nodes:
+            if self.main.ablation_ignore_task_nodes or self.rotate_hyperedges:
                 #scramble the hyperedges
                 new_pos = torch.randperm(logits.shape[0])
                 temp_logits = logits[new_pos]
@@ -185,13 +188,13 @@ class Actor(nn.Module):
 
 
             selected_hyperedge.append(out.x[batch_mask][selected_task_action[-1]])
-            batch_logits.append(logits[selected_task_action[-1]])
+            batch_logits.append(logits.tolist())
 
         return ActorReturn(graph=out,
                            batch_indices=batch_indices,
                            hyperedge=torch.stack(selected_hyperedge,dim=0),
                            task_action=torch.stack(selected_task_action,dim=0),
-                           logits = torch.stack(batch_logits) if self.exp_log_soft_output else None)
+                           logits = batch_logits)
 
     def update_target(self) -> None:
         """
