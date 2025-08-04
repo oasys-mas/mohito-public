@@ -1,6 +1,6 @@
 # 🍹 MOHITO: Multi-Agent Reinforcement Learning using Hypergraphs for Task-Open Systems
 
-This is the implementation for `MOHITO` our multi-agent reinforcement learning (MARL) solution for task-open Markov games (TaO-MG). This work is published in the paper: [MOHITO: Multi-Agent Reinforcement Learning using Hypergraphs for Task-Open Systems]() at UAI 2025. 
+This is the implementation for `MOHITO` our multi-agent reinforcement learning (MARL) solution for task-open Markov games (TaO-MG). This work is published in the paper: [MOHITO: Multi-Agent Reinforcement Learning using Hypergraphs for Task-Open Systems](http://thinc.cs.uga.edu/files/adresUAI25_cameraready.pdf) at UAI 2025. 
 
 **Wildfire** and **Rideshare**, our two domains, have different requirements. **Wildfire** is a fork of [Free-Range-Zoo](https://github.com/oasys-mas/free-range-zoo), an api for open MARL environments. This fork allows for multiple wildfires to exist in the same cell.  **Rideshare** is a precursor to the free-range-zoo rideshare and operates slightly differently.
 
