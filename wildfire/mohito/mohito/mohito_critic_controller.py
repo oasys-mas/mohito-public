@@ -144,13 +144,12 @@ class MohitoCriticController:
                     and self._checkpoint_counter > 0) or any(
                         self.has_converged.values()):
                 for name, p in policies.items():
-                    if run:
-                        torch.save(
-                            p.state_dict(),
-                            f'{self.checkpoint_path}/{name}_{self._total_checkpoints}.pt'
-                            if not any(self.has_converged.values()) else
-                            f'{self.checkpoint_path}/{name}_{self._total_checkpoints}_converged.pt'
-                        )
+                    torch.save(
+                        p.state_dict(),
+                        f'{self.checkpoint_path}/{name}_{self._total_checkpoints}.pt'
+                        if not any(self.has_converged.values()) else
+                        f'{self.checkpoint_path}/{name}_{self._total_checkpoints}_converged.pt'
+                    )
                 self._checkpoint_counter = 0
                 self._total_checkpoints += 1
             else:
@@ -230,10 +229,6 @@ class MohitoCriticController:
         R = torch.stack(R_ss, dim=0)
         #average over starting states
         R = R.mean(dim=0)
-
-        if run:
-            run['validation/firefighter1_episode_reward'].log(R.mean().item())
-            run['validation/firefighter1_episode_reward_std'].log(R.std().item())
 
         #set dropout
         [p.train() for p in policies.values()]

@@ -209,7 +209,7 @@ class Mohito(nn.Module):
         return {'actor_out': actor_out, 'actor_out_prime': actor_out_prime}
 
     def update(self, batch: Dict, hyperedges: List[Dict[str,
-                                                        ActorReturn]]) -> None:
+                                                        ActorReturn]], run=None) -> None:
         """
         MOHITO requires a two step update. 
         2. Update the networks using the shared hyperedges from other agents.
@@ -254,7 +254,7 @@ class Mohito(nn.Module):
         critic_main = self.critic(
             critic_graph=c, target=False, selected_actions=sel_a).q
 
-        critic_loss = torch.F.mse_loss(critic_main, critic_target)
+        critic_loss = torch.nn.functional.mse_loss(critic_main, critic_target)
 
         self.critic.optimizer.zero_grad()
         critic_loss.backward()
