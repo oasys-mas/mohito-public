@@ -1,7 +1,7 @@
 from typing import Dict, Any, Tuple, List
 from supersuit.generic_wrappers.utils.base_modifier import BaseModifier
 import torch
-from free_range_zoo.wrappers.wrapper_util import shared_wrapper
+from mohito.wrappers.wrapper_util import shared_wrapper
 from free_range_zoo.utils.env import BatchedAECEnv
 import torch_geometric as tg
 import torch.nn.functional as F

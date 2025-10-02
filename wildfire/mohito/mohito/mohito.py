@@ -7,7 +7,7 @@ from copy import deepcopy
 from mohito.mohito_layers import Actor, Critic, ActorReturn, CriticReturn
 from free_range_rust import Space
 import random
-from mohito.mohito_wrapper import construct_critic_graph
+from mohito.wrappers.mohito_wrapper import construct_critic_graph
 
 
 class Mohito(nn.Module):
@@ -247,11 +247,16 @@ class Mohito(nn.Module):
         B = len(c)
 
         #calculating critic loss then update
-        critic_loss = torch.mean(r + self.gamma * self.critic(
+        critic_target = r + self.gamma * self.critic(
             critic_graph=c_prime, target=True,
-            selected_actions=sel_a_prime).q - self.critic(
-                critic_graph=c, target=False, selected_actions=sel_a).q)
+            selected_actions=sel_a_prime).q.detach()
+        
+        critic_main = self.critic(
+            critic_graph=c, target=False, selected_actions=sel_a).q
 
+        critic_loss = torch.F.mse_loss(critic_main, critic_target)
+
+        self.critic.optimizer.zero_grad()
         critic_loss.backward()
         self.critic.update()
 
@@ -277,9 +282,6 @@ class Mohito(nn.Module):
                 selected_actions=sel_a,
             ).q)
 
+        self.actor.optimizer.zero_grad()
         actor_loss.backward()
         self.actor.update()
-
-        # print(
-        #     f"Actor loss: {actor_loss.item()}, Critic loss: {critic_loss.item()}"
-        # )
