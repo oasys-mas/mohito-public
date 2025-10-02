@@ -26,10 +26,13 @@ def load_wildfire_environment(config: Dict[str, Any],
     else:
 
         ten_attack = {k: torch.tensor(v, dtype=torch.int) if isinstance(v, list) else v for k, v in config['config']['agent'].items()}
-        attack = AgentConfiguration(**ten_attack)
+        ten_attack['equipment_states'] = ten_attack['equipment_states'].to(torch.float)
+        ten_attack['possible_capacities'] = ten_attack['possible_capacities'].to(torch.float)
+        fighter = AgentConfiguration(**ten_attack)
 
-        ten_defend = {k: torch.tensor(v, dtype=torch.int) if isinstance(v, list) else v for k, v in config['config']['fire'].items()}
-        defender = FireConfiguration(**ten_defend)
+
+        ten_fire = {k: torch.tensor(v, dtype=torch.int) if isinstance(v, list) else v for k, v in config['config']['fire'].items()}
+        fire = FireConfiguration(**ten_fire)
 
         ten_reward = {k: torch.tensor(v) if isinstance(v, list) else v for k, v in config['config']['reward'].items()}
         reward = RewardConfiguration(**ten_reward)
@@ -37,8 +40,8 @@ def load_wildfire_environment(config: Dict[str, Any],
         stochastic = StochasticConfiguration(**ten_stochastic)
 
         env_config = WildfireConfiguration(**config['config']['env'],
-                                           agent_config=attack,
-                                           fire_config=defender,
+                                           agent_config=fighter,
+                                           fire_config=fire,
                                            reward_config=reward,
                                            stochastic_config=stochastic)
 
